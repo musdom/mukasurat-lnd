@@ -1,0 +1,14 @@
+{
+  "name": "lnd-learning",
+  "version": "1.0.0",
+  "description": "NodeJS client examples for Lightning Network daemon",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Adam Mashrique",
+  "license": "MIT",
+  "dependencies": {
+    "grpc": "^1.8.0"
+  }
+}
