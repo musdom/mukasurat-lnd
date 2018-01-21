@@ -10,14 +10,32 @@ const lnrpcDescriptor = grpc.load('rpc.proto');
 const lnrpc = lnrpcDescriptor.lnrpc;
 const lightning = new lnrpc.Lightning('localhost:10009', credentials);
 
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
 meta.add('macaroon', adminMacaroon.toString('hex'));
 
-lightning.getInfo({}, meta, function(err, response) {
-  if (err) console.log(err);
-  // console.log('GetInfo:', response);
-  console.log('\nGetInfo:');
-  console.dir(response, {colors:true});
+app.use(cors());
+app.use(express.static(`./web-ui/dist`));
+
+app.get('/', (req,res) => {
+  res.sendFile('index.html');
 });
+
+app.get('/v1/getinfo', (req,res) => {
+  lightning.getInfo({}, meta, (err, response) => {
+    if (err) {
+      console.log(err);
+      res.send(err);
+    }
+    // console.log('GetInfo:', response);
+    console.log('\nGetInfo:');
+    console.dir(response, {colors:true});
+    res.json(response);
+  });
+});
+
 
 lightning.channelBalance({}, meta, function(err, response) {
   if (err) console.log(err);
@@ -48,3 +66,5 @@ call.on('data', function(invoice) {
   // Process status
   console.log("Current status" + status);
 });
+
+app.listen(3000, () => console.log('vue-lnd listening on port 3000!'));

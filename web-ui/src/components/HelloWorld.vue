@@ -1,113 +1,78 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <h2>Essential Links</h2>
-    <ul>
-      <li>
-        <a
-          href="https://vuejs.org"
-          target="_blank"
-        >
-          Core Docs
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://forum.vuejs.org"
-          target="_blank"
-        >
-          Forum
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://chat.vuejs.org"
-          target="_blank"
-        >
-          Community Chat
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://twitter.com/vuejs"
-          target="_blank"
-        >
-          Twitter
-        </a>
-      </li>
-      <br>
-      <li>
-        <a
-          href="http://vuejs-templates.github.io/webpack/"
-          target="_blank"
-        >
-          Docs for This Template
-        </a>
-      </li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li>
-        <a
-          href="http://router.vuejs.org/"
-          target="_blank"
-        >
-          vue-router
-        </a>
-      </li>
-      <li>
-        <a
-          href="http://vuex.vuejs.org/"
-          target="_blank"
-        >
-          vuex
-        </a>
-      </li>
-      <li>
-        <a
-          href="http://vue-loader.vuejs.org/"
-          target="_blank"
-        >
-          vue-loader
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-        >
-          awesome-vue
-        </a>
-      </li>
-    </ul>
+    <el-row type="flex" class="row-bg" justify="left">
+      <el-col :span="10">
+        <div class="grid-content bg-purple-light">
+          <!-- <p>{{ msg }}</p> -->
+          <el-table
+            :data="tableData"
+            style="width: 100%">
+            <el-table-column
+              prop="date"
+              label="Date"
+              width="120">
+            </el-table-column>
+            <el-table-column
+              prop="name"
+              label="Name"
+              width="120">
+            </el-table-column>
+            <el-table-column
+              prop="address"
+              label="Address">
+            </el-table-column>
+          </el-table>
+
+          <textarea v-model="nodeInfo">
+          </textarea>
+        </div>
+      </el-col>
+    </el-row>
+
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'HelloWorld',
   data() {
     return {
-      msg: 'Welcome to Your Vue.js App',
+      nodeInfo: 'fgsfds',
+      tableData: [
+        {
+          date: '2016-05-03',
+          name: 'Tom',
+          address: 'No. 189, Grove St, Los Angeles',
+        },
+      ],
     };
+  },
+  created() {
+    axios.get('http://hyve.ddns.net:3000/v1/getinfo')
+      .then((response) => {
+        // JSON responses are automatically parsed.
+        this.nodeInfo = response;
+      })
+      .catch((e) => {
+        this.nodeInfo = e;
+      });
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1, h2 {
-  font-weight: normal;
+.bg-purple-light {
+  background: #e5e9f2;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+.grid-content {
+  border-radius: 4px;
+  min-height: 36px;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+.row-bg {
+  padding: 10px;
+  background-color: #f9fafc;
 }
 </style>
