@@ -19,22 +19,47 @@ meta.add('macaroon', adminMacaroon.toString('hex'));
 app.use(cors());
 app.use(express.static(`./web-ui/dist`));
 
+let nodeObj = {
+  getInfo: {},
+  channelBalance: 0,
+};
+
 app.get('/', (req,res) => {
   res.sendFile('index.html');
 });
 
 app.get('/v1/getinfo', (req,res) => {
+  res.json(nodeObj.getInfo);
+});
+
+app.get('/v1/balance/channels', (req,res) => {
+  lightning.channelBalance({}, meta, function(err, response) {
+    if (err) console.log(err);
+    const balanceSatoshi = Number(response.balance);
+    const balanceBTC = balanceSatoshi / 100000000;
+    console.log('\nChannel Balance:');
+    console.log(`${balanceSatoshi} sat`);
+    console.log(`${balanceBTC} BTC`);
+    nodeObj.channelBalance = balanceSatoshi;
+    res.json(nodeObj.channelBalance);
+  });
+});
+
+// query lnd only every 5 minutes
+setInterval(() => {
   lightning.getInfo({}, meta, (err, response) => {
     if (err) {
       console.log(err);
-      res.send(err);
+      nodeObj.getInfo = err;
     }
-    // console.log('GetInfo:', response);
-    console.log('\nGetInfo:');
+    const timeStamp = Date.now();
+    let d = new Date(timeStamp);
+    console.log(`\n${d.toLocaleString()} - GetInfo:`);
     console.dir(response, {colors:true});
-    res.json(response);
+    nodeObj.getInfo = response;
+    nodeObj.getInfo.time = timeStamp;
   });
-});
+}, 30000);
 
 
 lightning.channelBalance({}, meta, function(err, response) {

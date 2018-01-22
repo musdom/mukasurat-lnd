@@ -3,13 +3,16 @@
     <el-row type="flex" class="row-bg" justify="center">
       <el-col :span="10">
         <div class="grid-content bg-purple-light">
+          <p>{{ nodeInfo.d.toLocaleString() }}</p>
           <el-form ref="form" label-width="120px">
             <el-form-item v-for="(value, key) in nodeInfo" :label="key" v-bind:key="key">
               <el-input :value="value.toString()" readonly></el-input>
             </el-form-item>
           </el-form>
           <!-- DEBUG -->
-          <!-- <pre>{{ nodeInfo }}</pre> -->
+          <!-- <pre>{{ channelBalance }}</pre> -->
+          <h1>{{ channelBalance }}</h1>
+          <el-button v-on:click="getChannelBalance">Refresh</el-button>
         </div>
       </el-col>
     </el-row>
@@ -23,7 +26,10 @@ export default {
   name: 'HelloWorld',
   data() {
     return {
-      nodeInfo: {},
+      nodeInfo: {
+        d: 0,
+      },
+      channelBalance: 0,
       tableData: [
         {
           date: '2016-05-03',
@@ -33,15 +39,29 @@ export default {
       ],
     };
   },
+  methods: {
+    getChannelBalance() {
+      axios.get('http://hyve.ddns.net:3000/v1/balance/channels')
+        .then((response) => {
+          // JSON responses are automatically parsed.
+          this.channelBalance = response.data;
+        })
+        .catch((e) => {
+          this.channelBalance = e;
+        });
+    },
+  },
   created() {
     axios.get('http://hyve.ddns.net:3000/v1/getinfo')
       .then((response) => {
         // JSON responses are automatically parsed.
         this.nodeInfo = response.data;
+        this.nodeInfo.d = new Date(Number(response.data.time));
       })
       .catch((e) => {
         this.nodeInfo = e;
       });
+    this.getChannelBalance();
   },
 };
 </script>
