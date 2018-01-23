@@ -29,7 +29,20 @@ app.get('/', (req,res) => {
 });
 
 app.get('/v1/getinfo', (req,res) => {
-  res.json(nodeObj.getInfo);
+  lightning.getInfo({}, meta, (err, response) => {
+    if (err) {
+      console.log(err);
+      res.send(err);
+    }
+    const timeStamp = Date.now();
+    let d = new Date(timeStamp);
+    console.log(`\n${d.toLocaleString()} - GetInfo:`);
+    console.dir(response, {colors:true});
+    let resObj = response;
+    resObj.time = timeStamp;
+    res.json(resObj);
+  });
+  // res.json(nodeObj.getInfo);
 });
 
 app.get('/v1/balance/channels', (req,res) => {
@@ -41,25 +54,25 @@ app.get('/v1/balance/channels', (req,res) => {
     console.log(`${balanceSatoshi} sat`);
     console.log(`${balanceBTC} BTC`);
     nodeObj.channelBalance = balanceSatoshi;
-    res.json(nodeObj.channelBalance);
+    res.json(balanceSatoshi);
   });
 });
 
 // query lnd only every 5 minutes
-setInterval(() => {
-  lightning.getInfo({}, meta, (err, response) => {
-    if (err) {
-      console.log(err);
-      nodeObj.getInfo = err;
-    }
-    const timeStamp = Date.now();
-    let d = new Date(timeStamp);
-    console.log(`\n${d.toLocaleString()} - GetInfo:`);
-    console.dir(response, {colors:true});
-    nodeObj.getInfo = response;
-    nodeObj.getInfo.time = timeStamp;
-  });
-}, 30000);
+// setInterval(() => {
+//   lightning.getInfo({}, meta, (err, response) => {
+//     if (err) {
+//       console.log(err);
+//       nodeObj.getInfo = err;
+//     }
+//     const timeStamp = Date.now();
+//     let d = new Date(timeStamp);
+//     console.log(`\n${d.toLocaleString()} - GetInfo:`);
+//     console.dir(response, {colors:true});
+//     nodeObj.getInfo = response;
+//     nodeObj.getInfo.time = timeStamp;
+//   });
+// }, 30000);
 
 
 lightning.channelBalance({}, meta, function(err, response) {
