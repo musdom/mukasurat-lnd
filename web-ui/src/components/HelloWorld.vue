@@ -37,7 +37,7 @@
           <el-form :inline="true">
             <el-form-item label="Amount (satoshi)">
               <el-input-number
-                v-model="incomingInvoice.currentValue"
+                v-model="incomingInvoice.nextValue"
                 :min="1"
                 :max="100000000">
               </el-input-number>
@@ -179,7 +179,7 @@ export default {
         });
     },
     createInvoice() {
-      this.$socket.emit('invoice-incoming', this.incomingInvoice.currentValue);
+      this.$socket.emit('invoice-incoming', this.incomingInvoice.nextValue);
     },
     payInvoice() {
       this.$socket.emit('invoice-outgoing', this.invoice);
