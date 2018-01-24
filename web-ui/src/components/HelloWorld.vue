@@ -37,7 +37,7 @@
           <el-form :inline="true">
             <el-form-item label="Amount (satoshi)">
               <el-input-number
-                v-model="amountToInvoice.value"
+                v-model="incomingInvoice.currentValue"
                 :min="1"
                 :max="100000000">
               </el-input-number>
@@ -46,12 +46,20 @@
               <el-button @click="createInvoice">Submit</el-button>
             </el-form-item>
           </el-form>
-          <el-form v-if="amountToInvoice.paymentRequest">
+          <el-form v-if="incomingInvoice.paymentRequest" :inline="true">
             <el-form-item label="Invoice">
-              <el-input :value="amountToInvoice.paymentRequest" readonly></el-input>
+              <el-input :value="incomingInvoice.paymentRequest" readonly>
+              </el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                icon="el-icon-mobile-phone"
+                @click="dialogQRVisible = true">
+                QR
+              </el-button>
             </el-form-item>
           </el-form>
-          <h3>Pay Invoice</h3>
+          <!-- <h3>Pay Invoice</h3>
           <el-form ref="form">
             <el-form-item label="Invoice">
               <el-input
@@ -59,7 +67,7 @@
                 @input="payInvoice">
               </el-input>
             </el-form-item>
-          </el-form>
+          </el-form> -->
         </div>
       </el-col>
       <el-col
@@ -103,6 +111,17 @@
         </div>
       </el-col>
     </el-row>
+    <el-dialog title="Invoice" :visible.sync="dialogQRVisible">
+      <el-row type="flex" justify="center">
+        <el-col align="center">
+          <qriously
+            background="white"
+            v-bind:value="incomingInvoice.paymentRequest"
+            v-bind:size="320" />
+          <p>Payment: {{ incomingInvoice.currentValue }} satoshis</p>
+        </el-col>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
@@ -122,12 +141,14 @@ export default {
       },
       channels: null,
       invoice: null,
-      amountToInvoice: {
-        value: Math.floor(Math.random() * 99) + 100,
+      incomingInvoice: {
+        nextValue: Math.floor(Math.random() * 99) + 100,
+        currentValue: 0,
         memo: null,
         expiry: 3600,
         paymentRequest: null,
       },
+      dialogQRVisible: false,
     };
   },
   methods: {
@@ -158,20 +179,25 @@ export default {
         });
     },
     createInvoice() {
-      this.$socket.emit('invoice-incoming', this.amountToInvoice.value);
-      this.amountToInvoice.value = Math.floor(Math.random() * 99) + 100;
+      this.$socket.emit('invoice-incoming', this.incomingInvoice.currentValue);
     },
     payInvoice() {
       this.$socket.emit('invoice-outgoing', this.invoice);
     },
   },
   created() {
+    // initialize currentValue
+    this.incomingInvoice.currentValue = this.incomingInvoice.nextValue;
     // socket listener
     this.$options.sockets['invoice-incoming-prepared'] = (data) => {
-      this.amountToInvoice.paymentRequest = data;
+      this.incomingInvoice.paymentRequest = data;
+      this.incomingInvoice.currentValue = this.incomingInvoice.nextValue;
+      this.incomingInvoice.nextValue = Math.floor(Math.random() * 99) + 100;
     };
     this.$options.sockets['channel-balance'] = (data) => {
       this.balance.channels = data.balance;
+      // hide QR dialog if still opened
+      this.dialogQRVisible = false;
       if (data.fulfilment) {
         this.$notify({
           title: 'Payment received!',

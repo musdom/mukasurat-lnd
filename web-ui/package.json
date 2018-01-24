@@ -17,6 +17,7 @@
     "axios": "^0.17.1",
     "element-ui": "^2.0.11",
     "vue": "^2.5.2",
+    "vue-qriously": "^1.1.1",
     "vue-router": "^3.0.1",
     "vue-socket.io": "^2.1.1-b"
   },
