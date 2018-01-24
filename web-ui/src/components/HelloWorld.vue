@@ -32,8 +32,46 @@
               <el-input :value="nodeInfo.block_height" readonly></el-input>
             </el-form-item>
           </el-form>
+        </div>
+      </el-col>
+      <el-col
+        v-if="channels"
+        :sm="8"
+        :lg="12">
+        <div class="grid-content bg-purple-dark">
+          <el-table
+            :data="channels"
+            style="width: 100%"
+            stripe
+            border>
+            <el-table-column
+              prop="remote_pubkey"
+              label="Remote pubkey">
+            </el-table-column>
+            <el-table-column
+              prop="active"
+              label="Active"
+              width="120"
+              align="center">
+              <template slot-scope="scope">
+                <el-tag
+                  :type="scope.row.active === true ? 'success' : 'danger'"
+                  close-transition>{{scope.row.active.toString()}}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="capacity"
+              label="Capacity"
+              width="120">
+            </el-table-column>
+            <el-table-column
+              prop="num_updates"
+              label="Updates"
+              width="120">
+            </el-table-column>
+          </el-table>
           <!-- DEBUG -->
-          <!-- <pre>{{ channelBalance }}</pre> -->
+          <!-- <pre>{{ channels }}</pre> -->
         </div>
       </el-col>
     </el-row>
@@ -54,13 +92,7 @@ export default {
         wallet: null,
         channels: null,
       },
-      tableData: [
-        {
-          date: '2016-05-03',
-          name: 'Tom',
-          address: 'No. 189, Grove St, Los Angeles',
-        },
-      ],
+      channels: null,
     };
   },
   methods: {
@@ -90,6 +122,29 @@ export default {
           });
         });
     },
+    getChannels() {
+      axios.get('http://hyve.ddns.net:3000/v1/channels')
+        .then((response) => {
+          // JSON responses are automatically parsed.
+          this.channels = response.data.channels;
+        })
+        .catch((e) => {
+          this.$notify.error({
+            title: 'Error',
+            message: `getChannels: ${e}`,
+          });
+        });
+    },
+    // tableRowClassName({ row, rowIndex }) {
+    //   console.log(row.active);
+    //   console.log(rowIndex);
+    //   if (rowIndex === 1) {
+    //     return 'success-row';
+    //   } else if (rowIndex === 3) {
+    //     return 'warning-row';
+    //   }
+    //   return '';
+    // },
   },
   created() {
     axios.get('http://hyve.ddns.net:3000/v1/getinfo')
@@ -106,6 +161,7 @@ export default {
       });
     this.getWalletBalance();
     this.getChannelBalance();
+    this.getChannels();
   },
 };
 </script>
@@ -132,5 +188,11 @@ export default {
   .row-bg {
     padding: 1em;
     /* background-color: #f9fafc; */
+  }
+  .el-table .warning-row {
+    background: oldlace;
+  }
+  .el-table .success-row {
+    background: #f0f9eb;
   }
 </style>
