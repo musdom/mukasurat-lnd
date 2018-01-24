@@ -2,22 +2,38 @@
   <div class="hello">
     <el-row type="flex" class="row-bg" justify="center">
       <el-col
-        :xs="20"
+        v-if="nodeInfo.d"
         :sm="16"
-        :md="12"
-        :lg="8"
-        :xl="4">
+        :lg="8">
+        <div class="grid-content bg-purple-light">
+          <h2>Balance</h2>
+          <h3>Wallet: {{ balance.wallet }} BTC</h3>
+          <h3>Channel: {{ balance.channels }} satoshis</h3>
+          <el-button v-on:click="getChannelBalance">Refresh</el-button>
+        </div>
         <div class="grid-content bg-purple">
           <p>{{ nodeInfo.d.toLocaleString() }}</p>
-          <el-form ref="form" label-width="120px" size="mini">
+          <!-- <el-form ref="form" label-width="180px" size="mini">
             <el-form-item v-for="(value, key) in nodeInfo" :label="key" v-bind:key="key">
               <el-input :value="value.toString()" readonly></el-input>
+            </el-form-item>
+          </el-form> -->
+          <el-form ref="form" label-width="120px" size="mini">
+            <el-form-item label="uri">
+              <el-input :value="nodeInfo.uris.toString()" readonly></el-input>
+            </el-form-item>
+            <el-form-item label="active channels">
+              <el-input :value="nodeInfo.num_active_channels" readonly></el-input>
+            </el-form-item>
+            <el-form-item label="peers">
+              <el-input :value="nodeInfo.num_peers" readonly></el-input>
+            </el-form-item>
+            <el-form-item label="blk height">
+              <el-input :value="nodeInfo.block_height" readonly></el-input>
             </el-form-item>
           </el-form>
           <!-- DEBUG -->
           <!-- <pre>{{ channelBalance }}</pre> -->
-          <h1>{{ channelBalance }}</h1>
-          <el-button v-on:click="getChannelBalance">Refresh</el-button>
         </div>
       </el-col>
     </el-row>
@@ -32,9 +48,12 @@ export default {
   data() {
     return {
       nodeInfo: {
-        d: 0,
+        d: null,
       },
-      channelBalance: 0,
+      balance: {
+        wallet: null,
+        channels: null,
+      },
       tableData: [
         {
           date: '2016-05-03',
@@ -49,10 +68,26 @@ export default {
       axios.get('http://hyve.ddns.net:3000/v1/balance/channels')
         .then((response) => {
           // JSON responses are automatically parsed.
-          this.channelBalance = response.data;
+          this.balance.channels = response.data;
         })
         .catch((e) => {
-          this.channelBalance = e;
+          this.$notify.error({
+            title: 'Error',
+            message: `getChannelBalance: ${e}`,
+          });
+        });
+    },
+    getWalletBalance() {
+      axios.get('http://hyve.ddns.net:3000/v1/balance/blockchain')
+        .then((response) => {
+          // JSON responses are automatically parsed.
+          this.balance.wallet = response.data;
+        })
+        .catch((e) => {
+          this.$notify.error({
+            title: 'Error',
+            message: `getWalletBalance: ${e}`,
+          });
         });
     },
   },
@@ -64,8 +99,12 @@ export default {
         this.nodeInfo.d = new Date(Number(response.data.time));
       })
       .catch((e) => {
-        this.nodeInfo = e;
+        this.$notify.error({
+          title: 'Error',
+          message: `getInfo: ${e}`,
+        });
       });
+    this.getWalletBalance();
     this.getChannelBalance();
   },
 };
@@ -84,8 +123,8 @@ export default {
   }
   .grid-content {
     border-radius: 4px;
-    min-height: 36px;
     padding: 1em;
+    margin: 1em;
   }
   .el-col {
     border-radius: 4px;

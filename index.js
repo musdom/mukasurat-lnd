@@ -21,7 +21,10 @@ app.use(express.static(`./web-ui/dist`));
 
 let nodeObj = {
   getInfo: {},
-  channelBalance: 0,
+  balance: {
+    wallet: null,
+    channels: null,
+  },
 };
 
 app.get('/', (req,res) => {
@@ -53,9 +56,13 @@ app.get('/v1/balance/channels', (req,res) => {
     console.log('\nChannel Balance:');
     console.log(`${balanceSatoshi} sat`);
     console.log(`${balanceBTC} BTC`);
-    nodeObj.channelBalance = balanceSatoshi;
+    nodeObj.balance.channels = balanceSatoshi;
     res.json(balanceSatoshi);
   });
+});
+
+app.get('/v1/balance/blockchain', (req,res) => {
+  res.json(nodeObj.balance.wallet);
 });
 
 // query lnd only every 5 minutes
@@ -74,16 +81,6 @@ app.get('/v1/balance/channels', (req,res) => {
 //   });
 // }, 30000);
 
-
-lightning.channelBalance({}, meta, function(err, response) {
-  if (err) console.log(err);
-  const balanceSatoshi = Number(response.balance);
-  const balanceBTC = balanceSatoshi / 100000000;
-  console.log('\nChannel Balance:');
-  console.log(`${balanceSatoshi} sat`);
-  console.log(`${balanceBTC} BTC`);
-});
-
 lightning.walletBalance({}, meta, function(err, response) {
   if (err) console.log(err);
   console.log('\nWallet Balance:');
@@ -91,6 +88,7 @@ lightning.walletBalance({}, meta, function(err, response) {
   const balanceBTC = balanceSatoshi / 100000000;
   console.log(`${balanceSatoshi} sat`);
   console.log(`${balanceBTC} BTC`);
+  nodeObj.balance.wallet = balanceBTC;
 });
 
 const call = lightning.subscribeInvoices({}, meta);
