@@ -26,6 +26,14 @@
 <script>
 export default {
   name: 'App',
+  sockets: {
+    connect: () => {
+      // console.log('socket connected');
+    },
+    // customEmit: (val) => {
+    //   console.log('Server onConnect: ' + val);
+    // },
+  },
 };
 </script>
 

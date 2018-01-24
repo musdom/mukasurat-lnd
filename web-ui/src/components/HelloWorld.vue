@@ -18,7 +18,7 @@
               <el-input :value="value.toString()" readonly></el-input>
             </el-form-item>
           </el-form> -->
-          <el-form ref="form" label-width="120px" size="mini">
+          <el-form label-width="120px" size="mini">
             <el-form-item label="uri">
               <el-input :value="nodeInfo.uris.toString()" readonly></el-input>
             </el-form-item>
@@ -30,6 +30,35 @@
             </el-form-item>
             <el-form-item label="blk height">
               <el-input :value="nodeInfo.block_height" readonly></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="grid-content bg-purple-dark">
+          <h3>Create Invoice</h3>
+          <el-form :inline="true">
+            <el-form-item label="Amount (satoshi)">
+              <el-input-number
+                v-model="amountToInvoice.value"
+                :min="1"
+                :max="100000000">
+              </el-input-number>
+            </el-form-item>
+            <el-form-item>
+              <el-button @click="createInvoice">Submit</el-button>
+            </el-form-item>
+          </el-form>
+          <el-form v-if="amountToInvoice.paymentRequest">
+            <el-form-item label="Invoice">
+              <el-input :value="amountToInvoice.paymentRequest" readonly></el-input>
+            </el-form-item>
+          </el-form>
+          <h3>Pay Invoice</h3>
+          <el-form ref="form">
+            <el-form-item label="Invoice">
+              <el-input
+                v-model="invoice"
+                @input="payInvoice">
+              </el-input>
             </el-form-item>
           </el-form>
         </div>
@@ -93,6 +122,13 @@ export default {
         channels: null,
       },
       channels: null,
+      invoice: null,
+      amountToInvoice: {
+        value: Math.floor(Math.random() * 99) + 100,
+        memo: null,
+        expiry: 3600,
+        paymentRequest: null,
+      },
     };
   },
   methods: {
@@ -135,6 +171,13 @@ export default {
           });
         });
     },
+    createInvoice() {
+      this.$socket.emit('invoice-incoming', this.amountToInvoice.value);
+      this.amountToInvoice.value = Math.floor(Math.random() * 99) + 100;
+    },
+    payInvoice() {
+      this.$socket.emit('invoice-outgoing', this.invoice);
+    },
     // tableRowClassName({ row, rowIndex }) {
     //   console.log(row.active);
     //   console.log(rowIndex);
@@ -147,6 +190,13 @@ export default {
     // },
   },
   created() {
+    // socket listener
+    this.$options.sockets['invoice-incoming-prepared'] = (data) => {
+      this.amountToInvoice.paymentRequest = data;
+    };
+    this.$options.sockets['channel-balance'] = (data) => {
+      this.balance.channels = data;
+    };
     axios.get('http://hyve.ddns.net:3000/v1/getinfo')
       .then((response) => {
         // JSON responses are automatically parsed.

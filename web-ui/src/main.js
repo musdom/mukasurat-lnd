@@ -2,6 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue';
 import ElementUI from 'element-ui';
+import VueSocketio from 'vue-socket.io';
 import 'element-ui/lib/theme-chalk/index.css';
 import App from './App';
 import router from './router';
@@ -9,6 +10,7 @@ import router from './router';
 Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
+Vue.use(VueSocketio, 'http://hyve.ddns.net:3000');
 
 /* eslint-disable no-new */
 new Vue({

@@ -12,7 +12,9 @@ const lightning = new lnrpc.Lightning('localhost:10009', credentials);
 
 const express = require('express');
 const cors = require('cors');
-const app = express();
+const app = require('express')();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 
 meta.add('macaroon', adminMacaroon.toString('hex'));
 
@@ -77,10 +79,37 @@ app.get('/v1/balance/blockchain', (req,res) => {
 
 app.get('/v1/channels', (req,res) => {
   lightning.listChannels({}, meta, function(err, response) {
-    console.log('ListChannels: ' + response);
+    // console.log('Channels: ');
+    // console.dir(response, {colors:true});
     nodeObj.channels = response;
     res.json(response);
   });
+});
+
+io.on('connection', function (socket) {
+  console.log('Client connected');
+  io.emit('customEmit', 'halo');
+
+  socket.on('invoice-incoming', function (amount) {
+    console.log(amount);
+    lightning.addInvoice({
+      memo: 'nodejs',
+      value: amount,
+      expiry: 3600
+    }, meta, function(err, response) {
+      if (err) console.log(err);
+      console.log('AddInvoice: ' + response.payment_request);
+      socket.emit('invoice-incoming-prepared', response.payment_request);    
+    });
+  });
+
+  socket.on('invoice-outgoing', function (invoice) {
+    console.log(invoice);
+  });
+
+  // socket.on('disconnect', function () {
+  //   io.emit('user disconnected');
+  // });
 });
 
 // query lnd only every 5 minutes
@@ -112,4 +141,4 @@ call.on('data', function(invoice) {
   console.log("Current status" + status);
 });
 
-app.listen(3000, () => console.log('vue-lnd listening on port 3000!'));
+server.listen(3000, () => console.log('vue-lnd listening on port 3000!'));
