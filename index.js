@@ -29,7 +29,7 @@ let nodeObj = {
   },
   channels: null,
 };
-let socketIO = null;
+// let socketIO = null;
 
 app.get('/', (req,res) => {
   res.sendFile('index.html');
@@ -149,7 +149,8 @@ call.on('data', function(invoice) {
           value: invoice.value,
         }
       };
-      socketIO.emit('channel-balance', emitObj);
+      io.emit('channel-balance', emitObj);
+      // socketIO.emit('channel-balance', emitObj);
     });
   }
 })
