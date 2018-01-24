@@ -29,6 +29,7 @@ let nodeObj = {
   },
   channels: null,
 };
+let socketIO = null;
 
 app.get('/', (req,res) => {
   res.sendFile('index.html');
@@ -49,19 +50,6 @@ app.get('/v1/getinfo', (req,res) => {
     res.json(resObj);
   });
   // res.json(nodeObj.getInfo);
-});
-
-app.get('/v1/balance/channels', (req,res) => {
-  lightning.channelBalance({}, meta, function(err, response) {
-    if (err) console.log(err);
-    const balanceSatoshi = Number(response.balance);
-    const balanceBTC = balanceSatoshi / 100000000;
-    console.log('\nChannel Balance:');
-    console.log(`${balanceSatoshi} sat`);
-    console.log(`${balanceBTC} BTC`);
-    nodeObj.balance.channels = balanceSatoshi;
-    res.json(balanceSatoshi);
-  });
 });
 
 app.get('/v1/balance/blockchain', (req,res) => {
@@ -88,7 +76,16 @@ app.get('/v1/channels', (req,res) => {
 
 io.on('connection', function (socket) {
   console.log('Client connected');
+  socketIO = socket;
   io.emit('customEmit', 'halo');
+
+  getChannelBalance((balance) => {
+    const emitObj = {
+      balance: balance,
+      fulfilment: false
+    }
+    socket.emit('channel-balance', emitObj);
+  });
 
   socket.on('invoice-incoming', function (amount) {
     console.log(amount);
@@ -99,7 +96,7 @@ io.on('connection', function (socket) {
     }, meta, function(err, response) {
       if (err) console.log(err);
       console.log('AddInvoice: ' + response.payment_request);
-      socket.emit('invoice-incoming-prepared', response.payment_request);    
+      socket.emit('invoice-incoming-prepared', response.payment_request);
     });
   });
 
@@ -107,9 +104,9 @@ io.on('connection', function (socket) {
     console.log(invoice);
   });
 
-  // socket.on('disconnect', function () {
-  //   io.emit('user disconnected');
-  // });
+  socket.on('disconnect', function () {
+    socketIO = null;
+  });
 });
 
 // query lnd only every 5 minutes
@@ -128,10 +125,33 @@ io.on('connection', function (socket) {
 //   });
 // }, 30000);
 
+function getChannelBalance(cb) {
+  lightning.channelBalance({}, meta, function(err, response) {
+    if (err) console.log(err);
+    const balanceSatoshi = Number(response.balance);
+    const balanceBTC = balanceSatoshi / 100000000;
+    console.log('\nChannel Balance:');
+    console.log(`${balanceSatoshi} sat`);
+    console.log(`${balanceBTC} BTC`);
+    nodeObj.balance.channels = balanceSatoshi;
+    cb(balanceSatoshi);
+  });
+}
 
 const call = lightning.subscribeInvoices({}, meta);
 call.on('data', function(invoice) {
-    console.log(invoice);
+  console.log(invoice);
+  if (socketIO) {
+    getChannelBalance((balance) => {
+      const emitObj = {
+        balance: balance,
+        fulfilment: {
+          value: invoice.value,
+        }
+      };
+      socketIO.emit('channel-balance', emitObj);
+    });
+  }
 })
 .on('end', function() {
   // The server has finished sending

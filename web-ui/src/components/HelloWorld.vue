@@ -9,7 +9,6 @@
           <h2>Balance</h2>
           <h3>Wallet: {{ balance.wallet }} BTC</h3>
           <h3>Channel: {{ balance.channels }} satoshis</h3>
-          <el-button v-on:click="getChannelBalance">Refresh</el-button>
         </div>
         <div class="grid-content bg-purple">
           <p>{{ nodeInfo.d.toLocaleString() }}</p>
@@ -132,19 +131,6 @@ export default {
     };
   },
   methods: {
-    getChannelBalance() {
-      axios.get('http://hyve.ddns.net:3000/v1/balance/channels')
-        .then((response) => {
-          // JSON responses are automatically parsed.
-          this.balance.channels = response.data;
-        })
-        .catch((e) => {
-          this.$notify.error({
-            title: 'Error',
-            message: `getChannelBalance: ${e}`,
-          });
-        });
-    },
     getWalletBalance() {
       axios.get('http://hyve.ddns.net:3000/v1/balance/blockchain')
         .then((response) => {
@@ -178,16 +164,6 @@ export default {
     payInvoice() {
       this.$socket.emit('invoice-outgoing', this.invoice);
     },
-    // tableRowClassName({ row, rowIndex }) {
-    //   console.log(row.active);
-    //   console.log(rowIndex);
-    //   if (rowIndex === 1) {
-    //     return 'success-row';
-    //   } else if (rowIndex === 3) {
-    //     return 'warning-row';
-    //   }
-    //   return '';
-    // },
   },
   created() {
     // socket listener
@@ -195,7 +171,14 @@ export default {
       this.amountToInvoice.paymentRequest = data;
     };
     this.$options.sockets['channel-balance'] = (data) => {
-      this.balance.channels = data;
+      this.balance.channels = data.balance;
+      if (data.fulfilment) {
+        this.$notify({
+          title: 'Payment received!',
+          message: `${data.fulfilment.value} satoshis received`,
+          type: 'success',
+        });
+      }
     };
     axios.get('http://hyve.ddns.net:3000/v1/getinfo')
       .then((response) => {
@@ -210,7 +193,6 @@ export default {
         });
       });
     this.getWalletBalance();
-    this.getChannelBalance();
     this.getChannels();
   },
 };
