@@ -39,6 +39,7 @@ export default {
 
 <style>
 body {
+  background-color: #280d3e;
   font-family: Arial;
   margin: 0;
 }

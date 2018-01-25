@@ -85,6 +85,10 @@
               label="Remote pubkey">
             </el-table-column>
             <el-table-column
+              prop="channel_point"
+              label="Chan pt">
+            </el-table-column>
+            <el-table-column
               prop="active"
               label="Active"
               width="120"
@@ -98,6 +102,11 @@
             <el-table-column
               prop="capacity"
               label="Capacity"
+              width="120">
+            </el-table-column>
+            <el-table-column
+              prop="local_balance"
+              label="Local"
               width="120">
             </el-table-column>
             <el-table-column
@@ -122,6 +131,15 @@
         </el-col>
       </el-row>
     </el-dialog>
+    <el-dialog title="Payment received!" :visible.sync="dialogTxVisible">
+      <el-row type="flex" justify="center">
+        <el-col align="center">
+          <i class="el-icon-success tx-receipt"></i>
+          <!-- <el-button type="success" icon="el-icon-check" round></el-button> -->
+          <h1>{{ lastPayment.value }} satoshis received</h1>
+        </el-col>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
@@ -132,6 +150,7 @@ export default {
   name: 'HelloWorld',
   data() {
     return {
+      host: 'http://hyve.ddns.net:3000',
       nodeInfo: {
         d: null,
       },
@@ -149,11 +168,29 @@ export default {
         paymentRequest: null,
       },
       dialogQRVisible: false,
+      dialogTxVisible: false,
+      lastPayment: {
+        value: null,
+      },
     };
   },
   methods: {
+    getInfo() {
+      axios.get(`${this.host}/v1/getinfo`)
+        .then((response) => {
+          // JSON responses are automatically parsed.
+          this.nodeInfo = response.data;
+          this.nodeInfo.d = new Date(Number(response.data.time));
+        })
+        .catch((e) => {
+          this.$notify.error({
+            title: 'Error',
+            message: `getInfo: ${e}`,
+          });
+        });
+    },
     getWalletBalance() {
-      axios.get('http://hyve.ddns.net:3000/v1/balance/blockchain')
+      axios.get(`${this.host}/v1/balance/blockchain`)
         .then((response) => {
           // JSON responses are automatically parsed.
           this.balance.wallet = response.data;
@@ -166,7 +203,7 @@ export default {
         });
     },
     getChannels() {
-      axios.get('http://hyve.ddns.net:3000/v1/channels')
+      axios.get(`${this.host}/v1/channels`)
         .then((response) => {
           // JSON responses are automatically parsed.
           this.channels = response.data.channels;
@@ -199,25 +236,17 @@ export default {
       // hide QR dialog if still opened
       this.dialogQRVisible = false;
       if (data.fulfilment) {
-        this.$notify({
-          title: 'Payment received!',
-          message: `${data.fulfilment.value} satoshis received`,
-          type: 'success',
-        });
+        this.incomingInvoice.paymentRequest = '';
+        this.lastPayment.value = data.fulfilment.value;
+        this.dialogTxVisible = true;
+        // this.$notify({
+        //   title: 'Payment received!',
+        //   message: `${data.fulfilment.value} satoshis received`,
+        //   type: 'success',
+        // });
       }
     };
-    axios.get('http://hyve.ddns.net:3000/v1/getinfo')
-      .then((response) => {
-        // JSON responses are automatically parsed.
-        this.nodeInfo = response.data;
-        this.nodeInfo.d = new Date(Number(response.data.time));
-      })
-      .catch((e) => {
-        this.$notify.error({
-          title: 'Error',
-          message: `getInfo: ${e}`,
-        });
-      });
+    this.getInfo();
     this.getWalletBalance();
     this.getChannels();
   },
@@ -252,5 +281,9 @@ export default {
   }
   .el-table .success-row {
     background: #f0f9eb;
+  }
+  .tx-receipt {
+    font-size: 10em;
+    color: green;
   }
 </style>
