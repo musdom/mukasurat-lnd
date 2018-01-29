@@ -29,7 +29,6 @@ let nodeObj = {
   },
   channels: null,
 };
-// let socketIO = null;
 
 app.get('/', (req,res) => {
   res.sendFile('index.html');
@@ -104,9 +103,8 @@ io.on('connection', function (socket) {
     console.log(invoice);
   });
 
-  socket.on('disconnect', function () {
-    socketIO = null;
-  });
+  // socket.on('disconnect', function () {
+  // });
 });
 
 // query lnd only every 5 minutes
@@ -141,18 +139,16 @@ function getChannelBalance(cb) {
 const call = lightning.subscribeInvoices({}, meta);
 call.on('data', function(invoice) {
   console.log(invoice);
-  if (socketIO) {
-    getChannelBalance((balance) => {
-      const emitObj = {
-        balance: balance,
-        fulfilment: {
-          value: invoice.value,
-        }
-      };
-      io.emit('channel-balance', emitObj);
-      // socketIO.emit('channel-balance', emitObj);
-    });
-  }
+  getChannelBalance((balance) => {
+    const emitObj = {
+      balance: balance,
+      fulfilment: {
+        value: invoice.value,
+      }
+    };
+    io.emit('channel-balance', emitObj);
+    // socketIO.emit('channel-balance', emitObj);
+  });
 })
 .on('end', function() {
   // The server has finished sending
