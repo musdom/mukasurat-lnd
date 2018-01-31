@@ -150,7 +150,7 @@ export default {
   name: 'HelloWorld',
   data() {
     return {
-      host: 'http://hyve.ddns.net:3000',
+      host: `http://${window.location.hostname}:3000`,
       nodeInfo: {
         d: null,
       },

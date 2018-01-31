@@ -11,7 +11,7 @@ import router from './router';
 Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
-Vue.use(VueSocketio, 'http://hyve.ddns.net:3000');
+Vue.use(VueSocketio, `http://${window.location.hostname}:3000`);
 Vue.use(VueQriously);
 
 /* eslint-disable no-new */
