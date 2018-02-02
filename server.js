@@ -75,7 +75,6 @@ app.get('/v1/channels', (req,res) => {
 
 io.on('connection', function (socket) {
   console.log('Client connected');
-  socketIO = socket;
   io.emit('customEmit', 'halo');
 
   getChannelBalance((balance) => {
@@ -139,16 +138,22 @@ function getChannelBalance(cb) {
 const call = lightning.subscribeInvoices({}, meta);
 call.on('data', function(invoice) {
   console.log(invoice);
-  getChannelBalance((balance) => {
-    const emitObj = {
-      balance: balance,
-      fulfilment: {
-        value: invoice.value,
-      }
-    };
-    io.emit('channel-balance', emitObj);
-    // socketIO.emit('channel-balance', emitObj);
-  });
+  const emitObj = {
+    balance: nodeObj.balance.channels,
+    fulfilment: {
+      value: invoice.value,
+    }
+  };
+  io.emit('channel-balance', emitObj);
+  setTimeout(() => {
+    getChannelBalance((balance) => {
+      const emitObj = {
+        balance: balance,
+        fulfilment: false
+      };
+      io.emit('channel-balance', emitObj);
+    });
+  }, 500);
 })
 .on('end', function() {
   // The server has finished sending
