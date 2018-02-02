@@ -5,12 +5,12 @@
         v-if="nodeInfo.d"
         :sm="16"
         :lg="8">
-        <div class="grid-content bg-purple-light">
+        <div class="grid-content bg-content">
           <h2>Balance</h2>
           <h3>Wallet: {{ balance.wallet }} BTC</h3>
           <h3>Channel: {{ balance.channels }} satoshis</h3>
         </div>
-        <div class="grid-content bg-purple">
+        <div class="grid-content bg-content">
           <p>{{ nodeInfo.d.toLocaleString() }}</p>
           <!-- <el-form ref="form" label-width="180px" size="mini">
             <el-form-item v-for="(value, key) in nodeInfo" :label="key" v-bind:key="key">
@@ -20,6 +20,9 @@
           <el-form label-width="120px" size="mini">
             <el-form-item label="uri">
               <el-input :value="nodeInfo.uris.toString()" readonly></el-input>
+            </el-form-item>
+            <el-form-item label="pubkey">
+              <el-input :value="nodeInfo.identity_pubkey.toString()" readonly></el-input>
             </el-form-item>
             <el-form-item label="active channels">
               <el-input :value="nodeInfo.num_active_channels" readonly></el-input>
@@ -32,7 +35,7 @@
             </el-form-item>
           </el-form>
         </div>
-        <div class="grid-content bg-purple-dark">
+        <div class="grid-content bg-content">
           <h3>Create Invoice</h3>
           <el-form :inline="true">
             <el-form-item label="Amount (satoshi)">
@@ -74,7 +77,7 @@
         v-if="channels"
         :sm="8"
         :lg="12">
-        <div class="grid-content bg-purple-dark">
+        <div class="grid-content bg-content">
           <el-table
             :data="channels"
             style="width: 100%"
@@ -255,15 +258,15 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  .bg-purple-dark {
-    background: #99a9bf;
+  .bg-content {
+    background: #5ccbff;
   }
-  .bg-purple {
+  /* .bg-purple {
     background: #d3dce6;
   }
   .bg-purple-light {
     background: #e5e9f2;
-  }
+  } */
   .grid-content {
     border-radius: 4px;
     padding: 1em;

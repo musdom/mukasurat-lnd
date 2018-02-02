@@ -4,9 +4,9 @@
       <el-menu
         class="el-menu-demo"
         mode="horizontal"
-        background-color="#545c64"
-        text-color="#fff"
-        active-text-color="#ffd04b">
+        background-color="rgb(255, 254, 147)"
+        text-color="#000"
+        active-text-color="#333">
         <el-menu-item index="1">Lightning Network Node [TESTNET]</el-menu-item>
         <!-- <el-submenu index="2">
           <template slot="title">Workspace</template>
@@ -39,7 +39,7 @@ export default {
 
 <style>
 body {
-  background-color: #280d3e;
+  background-color: #ff6c6c;
   font-family: Arial;
   margin: 0;
 }
