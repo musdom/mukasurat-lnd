@@ -3,6 +3,8 @@ This repository is made up of:
 1. NodeJS script that connects to lnd's gRPC methods.
 2. A simple VueJS webapp, located in the web-ui directory.
 
+Lightning Labs' lnd is currently under heavy development, therefore breaking changes happen almost weekly. This app works as of lightningnetwork/lnd commit: `b4e280eb152cbd5f2e9d7e116976316fd95be1c7`
+
 ## Setting up
 1. [`lnd`](https://github.com/lightningnetwork/lnd) needs to be installed and running. Guide: https://github.com/lightningnetwork/lnd/blob/master/docs/INSTALL.md
 2. Clone this repository
