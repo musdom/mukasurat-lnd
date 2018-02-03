@@ -236,17 +236,14 @@ export default {
     };
     this.$options.sockets['channel-balance'] = (data) => {
       this.balance.channels = data.balance;
-      // hide QR dialog if still opened
-      this.dialogQRVisible = false;
-      if (data.fulfilment) {
+      // quick fix for each browser instance listening to its own invoice
+      // needs better server-side fix
+      if (data.fulfilment.payReq === this.incomingInvoice.paymentRequest) {
+        // hide QR dialog if still opened
+        this.dialogQRVisible = false;
         this.incomingInvoice.paymentRequest = '';
         this.lastPayment.value = data.fulfilment.value;
         this.dialogTxVisible = true;
-        // this.$notify({
-        //   title: 'Payment received!',
-        //   message: `${data.fulfilment.value} satoshis received`,
-        //   type: 'success',
-        // });
       }
     };
     this.getInfo();

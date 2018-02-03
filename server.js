@@ -75,7 +75,6 @@ app.get('/v1/channels', (req,res) => {
 
 io.on('connection', function (socket) {
   console.log('Client connected');
-  io.emit('customEmit', 'halo');
 
   getChannelBalance((balance) => {
     const emitObj = {
@@ -141,6 +140,7 @@ call.on('data', function(invoice) {
   const emitObj = {
     balance: nodeObj.balance.channels,
     fulfilment: {
+      payReq: invoice.payment_request,
       value: invoice.value,
     }
   };
