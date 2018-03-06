@@ -1,3 +1,5 @@
+process.env.GRPC_SSL_CIPHER_SUITES = 'HIGH+ECDSA';
+
 const grpc = require('grpc');
 const fs = require('fs');
 
