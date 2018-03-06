@@ -4,7 +4,7 @@
       <el-menu
         class="el-menu-demo"
         mode="horizontal"
-        background-color="rgb(255, 254, 147)"
+        background-color="#f8f8f8"
         text-color="#000"
         active-text-color="#333">
         <el-menu-item index="1">Lightning Network Node [TESTNET]</el-menu-item>
@@ -39,7 +39,7 @@ export default {
 
 <style>
 body {
-  background-color: #ff6c6c;
+  background-color: #eaeaea;
   font-family: Arial;
   margin: 0;
 }
