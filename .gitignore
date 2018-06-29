@@ -1,3 +1,4 @@
 node_modules/
 package-lock.json
 .remote-sync.json
+*.macaroon

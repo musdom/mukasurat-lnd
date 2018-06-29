@@ -1,0 +1,33 @@
+{
+  "logger": {
+    "title": "Remote Sync"
+  },
+  "uploadOnSave": true,
+  "useAtomicWrites": false,
+  "deleteLocal": false,
+  "hostname": "hyve.ddns.net",
+  "port": "51822",
+  "target": "/home/adam/nodejs/pemandu-lnd",
+  "ignore": [
+    ".remote-sync.json",
+    ".git/**"
+  ],
+  "username": "adam",
+  "keyfile": "/home/adam/.ssh/id_rsa",
+  "watch": [],
+  "transport": "scp",
+  "uploadMirrors":[
+      {
+        "transport": "scp",
+        "hostname": "musdom.hopto.org",
+        "port": "34522",
+        "username": "pi",
+        "keyfile": "/home/adam/.ssh/id_rsa",
+        "target": "/home/pi/nodejs/pemandu-lnd",
+        "ignore": [
+          ".remote-sync.json",
+          ".git/**"
+        ]
+      }
+    ]
+}
